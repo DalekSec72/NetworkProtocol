@@ -19,7 +19,7 @@ KILL = 0
 buffer_size = 1024
 
 
-def server_send(clients: List[socket],):
+def server_send(clients: List[socket]):
     global message_buffer
     print('Server sender started.')
 
