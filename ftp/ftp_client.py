@@ -34,3 +34,14 @@ class FtpClient:
     def cwd(self, path):
         return self.ftp.cwd(path)
 
+    def retr(self, path, mode):
+        if mode == 'A':
+            with open(path, 'w') as f:
+                self.ftp.retrlines("RETR " + path, f.write)
+
+        else:
+            with open(path, 'w') as f:
+                self.ftp.retrbinary("RETR " + path, f.write)
+
+    def quit(self):
+        self.ftp.quit()

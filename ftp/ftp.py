@@ -20,8 +20,8 @@ if __name__ == '__main__':
     mode = input('1: server, 2: client: ')
 
     if mode == '1':
-        # server
         print('Server mode.')
+
 
     elif mode == '2':
         print('Client mode.')
@@ -32,20 +32,23 @@ if __name__ == '__main__':
         client.connect(host, control_port)
         client.login(username, password)
 
+        mode = 'A'
+        is_passive = True
+
         while client:
-            command = parse_command(input('ftp> '))
-            if len(command) == 1:
-                command = command[0]
+            cmd = parse_command(input('ftp> '))
+            if len(cmd) == 1:
+                command = cmd[0]
                 args = ''
 
             else:
-                command = command[0]
-                args = command[1:]
+                command = cmd[0]
+                args = cmd[1]
 
             # NLST, ls
             if command == 'ls':
                 if args:
-                    for line in client.nlst(args[0]):
+                    for line in client.nlst(args):
                         print(line)
 
                 else:
@@ -54,14 +57,32 @@ if __name__ == '__main__':
 
             # CWD, cd
             elif command == 'cd':
-                if not args[0]:
-                    args[0] = input('Change directory to: ')
+                if not args:
+                    args = [input('Change directory to: ')]
 
-                client.cwd(args[0])
+                client.cwd(args)
 
+            # RETR
             elif command == 'get':
-                pass
+                print(args)
+                client.retr(args, mode)
 
+            # TYPE
+            elif command == 'TYPE':
+                if args != 'A' or args != 'I':
+                    print('A or I')
+
+                else:
+                    mode = args
+
+            elif command == 'ascii':
+                mode = 'A'
+
+            elif command == 'bin':
+                mode = 'I'
+
+            elif command == 'quit' or command == 'bye':
+                client.quit()
 
     else:
         print('Press 1 or 2.')
