@@ -3,8 +3,10 @@
 # 2021 HYU. CSE
 # Taehun Kim <th6424@gmail.com>
 
-from ftp_client import FtpClient
+import threading
 
+import ftp_server
+from ftp_client import FtpClient
 
 host = '127.0.0.1'
 control_port = 36007
@@ -16,73 +18,85 @@ def parse_command(cmd):
     return cmd.split()
 
 
+def server_mode():
+    print('Server mode.')
+    listen_sock = threading.Thread(target=ftp_server.server_listener())
+    listen_sock.start()
+
+
+def client_mode():
+    print('Client mode.')
+    # host = input('Host:')
+    # control_port = input('Port:')
+
+    client = FtpClient()
+    client.connect(host, control_port)
+    client.login(username, password)
+
+    type = 'A'
+
+    while client:
+        cmd = parse_command(input('ftp> '))
+        if len(cmd) == 1:
+            command = cmd[0]
+            args = ''
+
+        else:
+            command = cmd[0]
+            args = cmd[1]
+
+        # NLST, ls
+        if command == 'ls':
+            if args:
+                for line in client.NLST(args):
+                    print(line)
+
+            else:
+                for line in client.NLST():
+                    print(line)
+
+        # CWD, cd
+        elif command == 'cd':
+            if not args:
+                args = input('Change directory to: ')
+
+            print(client.CWD(args))
+
+        # RETR
+        elif command == 'get':
+            print(args)
+            client.RETR(args, type)
+
+        # TYPE
+        elif command == 'type':
+            if args.upper() != 'A' and args.upper() != 'I':
+                print('A or I')
+
+            else:
+                type = args.upper()
+                print(client.send_command(f'TYPE {type}'))
+
+        elif command == 'ascii':
+            type = 'A'
+            print(client.send_command('TYPE A'))
+
+        elif command == 'bin':
+            type = 'I'
+            print(client.send_command('TYPE I'))
+
+        elif command == 'quit' or command == 'bye':
+            print(client.QUIT())
+            quit()
+
+
 if __name__ == '__main__':
     mode = input('1: server, 2: client: ')
 
     if mode == '1':
-        print('Server mode.')
-
+        server_mode()
 
     elif mode == '2':
-        print('Client mode.')
-        # host = input('Host:')
-        # control_port = input('Port:')
-
-        client = FtpClient()
-        client.connect(host, control_port)
-        client.login(username, password)
-
-        mode = 'A'
-        is_passive = True
-
-        while client:
-            cmd = parse_command(input('ftp> '))
-            if len(cmd) == 1:
-                command = cmd[0]
-                args = ''
-
-            else:
-                command = cmd[0]
-                args = cmd[1]
-
-            # NLST, ls
-            if command == 'ls':
-                if args:
-                    for line in client.nlst(args):
-                        print(line)
-
-                else:
-                    for line in client.nlst():
-                        print(line)
-
-            # CWD, cd
-            elif command == 'cd':
-                if not args:
-                    args = [input('Change directory to: ')]
-
-                client.cwd(args)
-
-            # RETR
-            elif command == 'get':
-                print(args)
-                client.retr(args, mode)
-
-            # TYPE
-            elif command == 'TYPE':
-                if args != 'A' or args != 'I':
-                    print('A or I')
-
-                else:
-                    mode = args
-
-            elif command == 'ascii':
-                mode = 'A'
-
-            elif command == 'bin':
-                mode = 'I'
-
-            elif command == 'quit' or command == 'bye':
-                client.quit()
+        client_mode()
 
     else:
         print('Press 1 or 2.')

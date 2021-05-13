@@ -5,6 +5,7 @@
 
 import ftplib
 
+
 class FtpClient:
     def __init__(self):
         self.host = None
@@ -26,22 +27,29 @@ class FtpClient:
         self.username = user
         self.password = pw
 
-        self.ftp.login(user=self.username, passwd=self.password)
+        # return self.ftp.login(user=self.username, passwd=self.password)
 
-    def nlst(self, path=''):
+        # 중간에 331 응답을 받기 위해 일부러 쪼갬.
+        print(self.send_command(f'USER {self.username}'))
+        print(self.send_command(f'PASS {self.password}'))
+
+    def send_command(self, cmd):
+        return self.ftp.sendcmd(cmd)
+
+    def NLST(self, path=''):
         return self.ftp.nlst(path)
 
-    def cwd(self, path):
+    def CWD(self, path):
         return self.ftp.cwd(path)
 
-    def retr(self, path, mode):
+    def RETR(self, path, mode):
         if mode == 'A':
             with open(path, 'w') as f:
                 self.ftp.retrlines("RETR " + path, f.write)
 
         else:
-            with open(path, 'w') as f:
+            with open(path, 'wb') as f:
                 self.ftp.retrbinary("RETR " + path, f.write)
 
-    def quit(self):
-        self.ftp.quit()
+    def QUIT(self):
+        return self.ftp.quit()
