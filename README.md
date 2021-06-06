@@ -13,3 +13,8 @@
   FTP(File Transfer Protocol)를 이용한 파일 전송 서버/클라이언트 구현.
   
   다양한 FTP 명령어와 응답코드를 구현하여 소켓을 통해 FTP 통신.
+
+4. Pub/Sub Middleware
+  토픽 기반 pub/sub 방식을 통한 데이터 송수신 구현.
+
+  publisher, subscriber 역할을 수행하는 client와 중간에서 요청을 처리하는 broker 구현.
